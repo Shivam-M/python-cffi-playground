@@ -22,6 +22,7 @@ ffi.cdef("""
     struct LinkedList* createList();
 
     void appendList(struct LinkedList*, struct Person*);
+    void freeList(struct LinkedList* linked_list);
     
 """)
 
@@ -30,6 +31,7 @@ ffi.set_source(
     """
     #include <stdint.h>
     #include <stdlib.h>
+    #include <time.h>
 
     struct Person {
         const char* name;
@@ -48,6 +50,8 @@ ffi.set_source(
     struct Person* getPerson() {
         struct Person* person = (struct Person*) malloc(sizeof(struct Person));
         if (person == NULL) return NULL;
+
+        srand(time(NULL));
 
         person->name = "Random Person";
         person->age = (rand() % 100) + 1;
@@ -83,7 +87,18 @@ ffi.set_source(
             }
             current_node->next = new_node;
         }
-    }
+    };
+
+    void freeList(struct LinkedList* linked_list) {
+        struct Node* current_node = linked_list->head;
+        while (current_node) {
+            struct Node* next_node = current_node->next;
+            free(current_node->data);
+            free(current_node);
+            current_node = next_node;
+        }
+        free(linked_list);
+    };
     
     """
 )
@@ -106,10 +121,12 @@ _test.lib.appendList(list_of_people, shivam)
 _test.lib.appendList(list_of_people, random_person)
 
 current_node = list_of_people.head
-while current_node != ffi.NULL:
+while current_node:
     person = current_node.data
     print(f"Name: {ffi.string(person.name).decode()}, Age: {person.age}")
     current_node = current_node.next
+
+_test.lib.freeList(list_of_people)
 
 # print(f"Name: {ffi.string(shivam.name).decode()}, Age: {shivam.age}")
 # print(f"Name: {ffi.string(random_person.name).decode()}, Age: {random_person.age}")
