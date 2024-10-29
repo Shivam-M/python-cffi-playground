@@ -23,6 +23,7 @@ ffi.cdef("""
 
     void appendList(struct LinkedList*, struct Person*);
     void freeList(struct LinkedList* linked_list);
+    void initialise();
     
 """)
 
@@ -51,8 +52,6 @@ ffi.set_source(
         struct Person* person = (struct Person*) malloc(sizeof(struct Person));
         if (person == NULL) return NULL;
 
-        srand(time(NULL));
-
         person->name = "Random Person";
         person->age = (rand() % 100) + 1;
         return person;
@@ -70,7 +69,7 @@ ffi.set_source(
     struct LinkedList* createList() {
         struct LinkedList* linked_list = (struct LinkedList*) malloc(sizeof(struct LinkedList));
         if (linked_list == NULL) return NULL;
-
+        
         linked_list->head = NULL;
         return linked_list;
     };
@@ -89,6 +88,10 @@ ffi.set_source(
         }
     };
 
+    void removeList(struct LinkedList* linked_list, struct Person* person) {
+        
+    }
+
     void freeList(struct LinkedList* linked_list) {
         struct Node* current_node = linked_list->head;
         while (current_node) {
@@ -99,6 +102,10 @@ ffi.set_source(
         }
         free(linked_list);
     };
+
+    void initialise() {
+        srand(time(NULL));
+    }
     
     """
 )
@@ -108,6 +115,8 @@ ffi.compile()
 ###
 
 import _test
+
+_test.lib.initialise()
 
 shivam = _test.ffi.new("struct Person *")
 shivam.name = _test.ffi.new("char[]", b"Shivam")
@@ -119,6 +128,9 @@ list_of_people = _test.lib.createList()
 
 _test.lib.appendList(list_of_people, shivam)
 _test.lib.appendList(list_of_people, random_person)
+
+for x in range(5):
+    _test.lib.appendList(list_of_people, _test.lib.getPerson())
 
 current_node = list_of_people.head
 while current_node:
