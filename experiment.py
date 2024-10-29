@@ -22,6 +22,7 @@ ffi.cdef("""
     struct LinkedList* createList();
 
     void appendList(struct LinkedList*, struct Person*);
+    void removeList(struct LinkedList*, struct Person*);
     void freeList(struct LinkedList* linked_list);
     void initialise();
     
@@ -89,7 +90,21 @@ ffi.set_source(
     };
 
     void removeList(struct LinkedList* linked_list, struct Person* person) {
-        
+        struct Node* current_node = linked_list->head;
+        struct Node* previous_node = NULL;
+
+        while (current_node != NULL) {
+            if (current_node->data == person) {
+                if (previous_node == NULL) {
+                    linked_list->head = current_node->next;
+                } else {
+                    previous_node->next = current_node->next;
+                }
+                return;
+            }
+            previous_node = current_node;
+            current_node = current_node->next;
+        }
     }
 
     void freeList(struct LinkedList* linked_list) {
@@ -122,15 +137,22 @@ shivam = _test.ffi.new("struct Person *")
 shivam.name = _test.ffi.new("char[]", b"Shivam")
 shivam.age = 22
 
+shivam_clone = _test.ffi.new("struct Person *")
+shivam_clone.name = _test.ffi.new("char[]", b"Shivam Clone")
+shivam_clone.age = 22
+
 random_person = _test.lib.getPerson()
 
 list_of_people = _test.lib.createList()
 
 _test.lib.appendList(list_of_people, shivam)
+_test.lib.appendList(list_of_people, shivam_clone)
 _test.lib.appendList(list_of_people, random_person)
 
 for x in range(5):
     _test.lib.appendList(list_of_people, _test.lib.getPerson())
+
+_test.lib.removeList(list_of_people, shivam_clone)
 
 current_node = list_of_people.head
 while current_node:

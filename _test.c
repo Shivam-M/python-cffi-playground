@@ -630,7 +630,21 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
     };
 
     void removeList(struct LinkedList* linked_list, struct Person* person) {
-        
+        struct Node* current_node = linked_list->head;
+        struct Node* previous_node = NULL;
+
+        while (current_node != NULL) {
+            if (current_node->data == person) {
+                if (previous_node == NULL) {
+                    linked_list->head = current_node->next;
+                } else {
+                    previous_node->next = current_node->next;
+                }
+                return;
+            }
+            previous_node = current_node;
+            current_node = current_node->next;
+        }
     }
 
     void freeList(struct LinkedList* linked_list) {
@@ -880,6 +894,57 @@ _cffi_f_initialise(PyObject *self, PyObject *noarg)
 #  define _cffi_f_initialise _cffi_d_initialise
 #endif
 
+static void _cffi_d_removeList(struct LinkedList * x0, struct Person * x1)
+{
+  removeList(x0, x1);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_removeList(PyObject *self, PyObject *args)
+{
+  struct LinkedList * x0;
+  struct Person * x1;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+  PyObject *arg0;
+  PyObject *arg1;
+
+  if (!PyArg_UnpackTuple(args, "removeList", 2, 2, &arg0, &arg1))
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(8), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (struct LinkedList *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(8), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(3), arg1, (char **)&x1);
+  if (datasize != 0) {
+    x1 = ((size_t)datasize) <= 640 ? (struct Person *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(3), arg1, (char **)&x1,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { removeList(x0, x1); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+#else
+#  define _cffi_f_removeList _cffi_d_removeList
+#endif
+
 _CFFI_UNUSED_FN
 static void _cffi_checkfld_struct_LinkedList(struct LinkedList *p)
 {
@@ -916,6 +981,7 @@ static const struct _cffi_global_s _cffi_globals[] = {
   { "freeList", (void *)_cffi_f_freeList, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 7), (void *)_cffi_d_freeList },
   { "getPerson", (void *)_cffi_f_getPerson, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 5), (void *)_cffi_d_getPerson },
   { "initialise", (void *)_cffi_f_initialise, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 14), (void *)_cffi_d_initialise },
+  { "removeList", (void *)_cffi_f_removeList, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 10), (void *)_cffi_d_removeList },
 };
 
 static const struct _cffi_field_s _cffi_fields[] = {
@@ -952,7 +1018,7 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   _cffi_struct_unions,
   NULL,  /* no enums */
   NULL,  /* no typenames */
-  6,  /* num_globals */
+  7,  /* num_globals */
   3,  /* num_struct_unions */
   0,  /* num_enums */
   0,  /* num_typenames */
