@@ -1,10 +1,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+
+static const char* RANDOM_NAMES[] = {
+    "Bart", "Homer", "Lisa", "Marge", "Maggie", "Abe"
+};
+static const int RANDOM_NAMES_LENGTH = sizeof(RANDOM_NAMES) / sizeof(RANDOM_NAMES[0]);
 
 struct Person {
-    const char* name;
-    uint8_t age;
+    char* name;
+    int age;
 };
 
 struct Node {
@@ -15,15 +21,6 @@ struct Node {
 struct LinkedList {
     struct Node* head;
 };
-
-struct Person* getPerson() {
-    struct Person* person = (struct Person*) malloc(sizeof(struct Person));
-    if (person == NULL) return NULL;
-
-    person->name = "Random Person";
-    person->age = (rand() % 100) + 1;
-    return person;
-}
 
 struct Node* createNode(struct Person* person) {
     struct Node* node = (struct Node*) malloc(sizeof(struct Node));
@@ -42,26 +39,53 @@ struct LinkedList* createList() {
     return linked_list;
 }
 
+struct Person* createPerson(char* name, int age) {
+    struct Person* person = (struct Person*) malloc(sizeof(struct Person));
+    if (person == NULL) return NULL;
+
+    person->name = strdup(name);
+    person->age = age;
+    return person;
+}
+
+struct Person* getPerson() {
+    const char* name = RANDOM_NAMES[rand() % RANDOM_NAMES_LENGTH];
+    int age = (rand() % 100) + 1;
+    return createPerson(name, age);
+}
+
+void freePerson(struct Person* person) {
+    if (person == NULL) return;
+    // free(person->name);
+    // free(person);
+}
+
 void freeNode(struct Node* node) {
-    free(node->data);
-    free(node);
+    if (node == NULL) return;
+    // free(node);
 }
 
 void freeList(struct LinkedList* linked_list) {
+    if (linked_list == NULL) return;
     struct Node* current_node = linked_list->head;
+    struct Node* next_node = NULL;
+
     while (current_node) {
-        struct Node* next_node = current_node->next;
+        next_node = current_node->next;
+        freePerson(current_node->data);
         freeNode(current_node);
         current_node = next_node;
     }
-    free(linked_list);
+
+    // free(linked_list);
 }
 
 void appendList(struct LinkedList* linked_list, struct Person* person) {
+    if (linked_list == NULL || person == NULL) return;
     struct Node* new_node = createNode(person);
-
+    struct Node* current_node = NULL;
     if (linked_list->head) {
-        struct Node* current_node = linked_list->head;
+        current_node = linked_list->head;
         while (current_node->next) {
             current_node = current_node->next;
         }
@@ -74,7 +98,6 @@ void appendList(struct LinkedList* linked_list, struct Person* person) {
 void removeList(struct LinkedList* linked_list, struct Person* person) {
     struct Node* current_node = linked_list->head;
     struct Node* previous_node = NULL;
-
     while (current_node) {
         if (current_node->data == person) {
             if (previous_node == NULL) {
@@ -82,6 +105,7 @@ void removeList(struct LinkedList* linked_list, struct Person* person) {
             } else {
                 previous_node->next = current_node->next;
             }
+            freePerson(current_node->data);
             freeNode(current_node);
             return;
         }

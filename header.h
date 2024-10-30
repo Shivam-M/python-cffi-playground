@@ -1,6 +1,6 @@
 struct Person {
-    const char* name;
-    uint8_t age;
+    char* name;
+    int age;
 };
 
 struct Node {
@@ -13,9 +13,11 @@ struct LinkedList {
 };
 
 struct Node* createNode(struct Person*);
-struct Person* getPerson();
 struct LinkedList* createList();
+struct Person* createPerson(char*, int);
+struct Person* getPerson();
 
+void freePerson(struct Person*);
 void freeNode(struct Node*);
 void freeList(struct LinkedList*);
 void appendList(struct LinkedList*, struct Person*);

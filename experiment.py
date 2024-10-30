@@ -12,9 +12,40 @@ ffi.compile()
 
 ###
 
+from definitions import LinkedList, Person
 import _test
 
 _test.lib.initialise()
+
+linked_list = LinkedList()
+
+batman = _test.ffi.new("struct Person *")
+batman.name = _test.ffi.new("char[]", b"Batman")
+batman.age = 32
+
+alfred = _test.ffi.new("struct Person *")
+alfred.name = _test.ffi.new("char[]", b"Alfred")
+alfred.age = 65
+
+robin = Person("Robin", 30)
+
+linked_list.append(batman)
+linked_list.append(alfred)
+linked_list.append(robin._get())
+
+for x in range(5):
+    linked_list.append(_test.lib.getPerson())
+
+# linked_list.remove(robin._get())
+
+for item in linked_list:
+    print(_test.ffi.string(item.name).decode(), item.age)
+
+del linked_list
+
+# print(batman)
+
+###
 
 shivam = _test.ffi.new("struct Person *")
 shivam.name = _test.ffi.new("char[]", b"Shivam")
