@@ -570,127 +570,132 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 /************************************************************/
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 
-    #include <stdint.h>
-    #include <stdlib.h>
-    #include <time.h>
+struct Person {
+    const char* name;
+    uint8_t age;
+};
 
-    struct Person {
-        const char* name;
-        uint8_t age;
-    };
+struct Node {
+    struct Person* data;
+    struct Node* next;
+};
 
-    struct Node {
-        struct Person* data;
-        struct Node* next;
-    };
+struct LinkedList {
+    struct Node* head;
+};
 
-    struct LinkedList {
-        struct Node* head;
-    };
+struct Person* getPerson() {
+    struct Person* person = (struct Person*) malloc(sizeof(struct Person));
+    if (person == NULL) return NULL;
 
-    struct Person* getPerson() {
-        struct Person* person = (struct Person*) malloc(sizeof(struct Person));
-        if (person == NULL) return NULL;
+    person->name = "Random Person";
+    person->age = (rand() % 100) + 1;
+    return person;
+}
 
-        person->name = "Random Person";
-        person->age = (rand() % 100) + 1;
-        return person;
-    };
+struct Node* createNode(struct Person* person) {
+    struct Node* node = (struct Node*) malloc(sizeof(struct Node));
+    if (node == NULL) return NULL;
 
-    struct Node* createNode(struct Person* person) {
-        struct Node* node = (struct Node*) malloc(sizeof(struct Node));
-        if (node == NULL) return NULL;
+    node->data = person;
+    node->next = NULL;
+    return node;
+}
 
-        node->data = person;
-        node->next = NULL;
-        return node;
+struct LinkedList* createList() {
+    struct LinkedList* linked_list = (struct LinkedList*) malloc(sizeof(struct LinkedList));
+    if (linked_list == NULL) return NULL;
+    
+    linked_list->head = NULL;
+    return linked_list;
+}
+
+void freeNode(struct Node* node) {
+    free(node->data);
+    free(node);
+}
+
+void freeList(struct LinkedList* linked_list) {
+    struct Node* current_node = linked_list->head;
+    while (current_node) {
+        struct Node* next_node = current_node->next;
+        freeNode(current_node);
+        current_node = next_node;
     }
+    free(linked_list);
+}
 
-    struct LinkedList* createList() {
-        struct LinkedList* linked_list = (struct LinkedList*) malloc(sizeof(struct LinkedList));
-        if (linked_list == NULL) return NULL;
-        
-        linked_list->head = NULL;
-        return linked_list;
-    };
+void appendList(struct LinkedList* linked_list, struct Person* person) {
+    struct Node* new_node = createNode(person);
 
-    void appendList(struct LinkedList* linked_list, struct Person* person) {
-        struct Node* new_node = createNode(person);
-
-        if (linked_list->head == NULL) {
-            linked_list->head = new_node;
-        } else {
-            struct Node* current_node = linked_list->head;
-            while (current_node->next != NULL) {
-                current_node = current_node->next;
-            }
-            current_node->next = new_node;
-        }
-    };
-
-    void removeList(struct LinkedList* linked_list, struct Person* person) {
+    if (linked_list->head == NULL) {
+        linked_list->head = new_node;
+    } else {
         struct Node* current_node = linked_list->head;
-        struct Node* previous_node = NULL;
-
-        while (current_node != NULL) {
-            if (current_node->data == person) {
-                if (previous_node == NULL) {
-                    linked_list->head = current_node->next;
-                } else {
-                    previous_node->next = current_node->next;
-                }
-                return;
-            }
-            previous_node = current_node;
+        while (current_node->next != NULL) {
             current_node = current_node->next;
         }
+        current_node->next = new_node;
     }
+}
 
-    void freeList(struct LinkedList* linked_list) {
-        struct Node* current_node = linked_list->head;
-        while (current_node) {
-            struct Node* next_node = current_node->next;
-            free(current_node->data);
-            free(current_node);
-            current_node = next_node;
+void removeList(struct LinkedList* linked_list, struct Person* person) {
+    struct Node* current_node = linked_list->head;
+    struct Node* previous_node = NULL;
+
+    while (current_node != NULL) {
+        if (current_node->data == person) {
+            if (previous_node == NULL) {
+                linked_list->head = current_node->next;
+            } else {
+                previous_node->next = current_node->next;
+            }
+            freeNode(current_node);
+            return;
         }
-        free(linked_list);
-    };
-
-    void initialise() {
-        srand(time(NULL));
+        previous_node = current_node;
+        current_node = current_node->next;
     }
-    
-    
+}
+
+void initialise() {
+    srand(time(NULL));
+}
+
 
 /************************************************************/
 
 static void *_cffi_types[] = {
 /*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 8), // struct LinkedList *()(void)
 /*  1 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/*  2 */ _CFFI_OP(_CFFI_OP_FUNCTION, 19), // struct Node *()(struct Person *)
-/*  3 */ _CFFI_OP(_CFFI_OP_POINTER, 21), // struct Person *
+/*  2 */ _CFFI_OP(_CFFI_OP_FUNCTION, 15), // struct Node *()(struct Person *)
+/*  3 */ _CFFI_OP(_CFFI_OP_POINTER, 23), // struct Person *
 /*  4 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /*  5 */ _CFFI_OP(_CFFI_OP_FUNCTION, 3), // struct Person *()(void)
 /*  6 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/*  7 */ _CFFI_OP(_CFFI_OP_FUNCTION, 23), // void()(struct LinkedList *)
-/*  8 */ _CFFI_OP(_CFFI_OP_POINTER, 18), // struct LinkedList *
+/*  7 */ _CFFI_OP(_CFFI_OP_FUNCTION, 25), // void()(struct LinkedList *)
+/*  8 */ _CFFI_OP(_CFFI_OP_POINTER, 21), // struct LinkedList *
 /*  9 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 10 */ _CFFI_OP(_CFFI_OP_FUNCTION, 23), // void()(struct LinkedList *, struct Person *)
+/* 10 */ _CFFI_OP(_CFFI_OP_FUNCTION, 25), // void()(struct LinkedList *, struct Person *)
 /* 11 */ _CFFI_OP(_CFFI_OP_NOOP, 8),
 /* 12 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
 /* 13 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 14 */ _CFFI_OP(_CFFI_OP_FUNCTION, 23), // void()(void)
-/* 15 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 16 */ _CFFI_OP(_CFFI_OP_POINTER, 17), // char const *
-/* 17 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 2), // char
-/* 18 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 0), // struct LinkedList
-/* 19 */ _CFFI_OP(_CFFI_OP_POINTER, 20), // struct Node *
-/* 20 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 1), // struct Node
-/* 21 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 2), // struct Person
-/* 22 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 18), // uint8_t
-/* 23 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
+/* 14 */ _CFFI_OP(_CFFI_OP_FUNCTION, 25), // void()(struct Node *)
+/* 15 */ _CFFI_OP(_CFFI_OP_POINTER, 22), // struct Node *
+/* 16 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 17 */ _CFFI_OP(_CFFI_OP_FUNCTION, 25), // void()(void)
+/* 18 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 19 */ _CFFI_OP(_CFFI_OP_POINTER, 20), // char const *
+/* 20 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 2), // char
+/* 21 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 0), // struct LinkedList
+/* 22 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 1), // struct Node
+/* 23 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 2), // struct Person
+/* 24 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 18), // uint8_t
+/* 25 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
 static void _cffi_d_appendList(struct LinkedList * x0, struct Person * x1)
@@ -800,7 +805,7 @@ _cffi_f_createNode(PyObject *self, PyObject *arg0)
   Py_END_ALLOW_THREADS
 
   (void)self; /* unused */
-  pyresult = _cffi_from_c_pointer((char *)result, _cffi_type(19));
+  pyresult = _cffi_from_c_pointer((char *)result, _cffi_type(15));
   if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
   return pyresult;
 }
@@ -842,6 +847,42 @@ _cffi_f_freeList(PyObject *self, PyObject *arg0)
 }
 #else
 #  define _cffi_f_freeList _cffi_d_freeList
+#endif
+
+static void _cffi_d_freeNode(struct Node * x0)
+{
+  freeNode(x0);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_freeNode(PyObject *self, PyObject *arg0)
+{
+  struct Node * x0;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(15), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (struct Node *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(15), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { freeNode(x0); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+#else
+#  define _cffi_f_freeNode _cffi_d_freeNode
 #endif
 
 static struct Person * _cffi_d_getPerson(void)
@@ -979,35 +1020,36 @@ static const struct _cffi_global_s _cffi_globals[] = {
   { "createList", (void *)_cffi_f_createList, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 0), (void *)_cffi_d_createList },
   { "createNode", (void *)_cffi_f_createNode, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 2), (void *)_cffi_d_createNode },
   { "freeList", (void *)_cffi_f_freeList, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 7), (void *)_cffi_d_freeList },
+  { "freeNode", (void *)_cffi_f_freeNode, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 14), (void *)_cffi_d_freeNode },
   { "getPerson", (void *)_cffi_f_getPerson, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 5), (void *)_cffi_d_getPerson },
-  { "initialise", (void *)_cffi_f_initialise, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 14), (void *)_cffi_d_initialise },
+  { "initialise", (void *)_cffi_f_initialise, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 17), (void *)_cffi_d_initialise },
   { "removeList", (void *)_cffi_f_removeList, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 10), (void *)_cffi_d_removeList },
 };
 
 static const struct _cffi_field_s _cffi_fields[] = {
   { "head", offsetof(struct LinkedList, head),
             sizeof(((struct LinkedList *)0)->head),
-            _CFFI_OP(_CFFI_OP_NOOP, 19) },
+            _CFFI_OP(_CFFI_OP_NOOP, 15) },
   { "data", offsetof(struct Node, data),
             sizeof(((struct Node *)0)->data),
             _CFFI_OP(_CFFI_OP_NOOP, 3) },
   { "next", offsetof(struct Node, next),
             sizeof(((struct Node *)0)->next),
-            _CFFI_OP(_CFFI_OP_NOOP, 19) },
+            _CFFI_OP(_CFFI_OP_NOOP, 15) },
   { "name", offsetof(struct Person, name),
             sizeof(((struct Person *)0)->name),
-            _CFFI_OP(_CFFI_OP_NOOP, 16) },
+            _CFFI_OP(_CFFI_OP_NOOP, 19) },
   { "age", offsetof(struct Person, age),
            sizeof(((struct Person *)0)->age),
-           _CFFI_OP(_CFFI_OP_NOOP, 22) },
+           _CFFI_OP(_CFFI_OP_NOOP, 24) },
 };
 
 static const struct _cffi_struct_union_s _cffi_struct_unions[] = {
-  { "LinkedList", 18, _CFFI_F_CHECK_FIELDS,
+  { "LinkedList", 21, _CFFI_F_CHECK_FIELDS,
     sizeof(struct LinkedList), offsetof(struct _cffi_align_struct_LinkedList, y), 0, 1 },
-  { "Node", 20, _CFFI_F_CHECK_FIELDS,
+  { "Node", 22, _CFFI_F_CHECK_FIELDS,
     sizeof(struct Node), offsetof(struct _cffi_align_struct_Node, y), 1, 2 },
-  { "Person", 21, _CFFI_F_CHECK_FIELDS,
+  { "Person", 23, _CFFI_F_CHECK_FIELDS,
     sizeof(struct Person), offsetof(struct _cffi_align_struct_Person, y), 3, 2 },
 };
 
@@ -1018,12 +1060,12 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   _cffi_struct_unions,
   NULL,  /* no enums */
   NULL,  /* no typenames */
-  7,  /* num_globals */
+  8,  /* num_globals */
   3,  /* num_struct_unions */
   0,  /* num_enums */
   0,  /* num_typenames */
   NULL,  /* no includes */
-  24,  /* num_types */
+  26,  /* num_types */
   0,  /* flags */
 };
 
