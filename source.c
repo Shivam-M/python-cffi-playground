@@ -60,14 +60,14 @@ void freeList(struct LinkedList* linked_list) {
 void appendList(struct LinkedList* linked_list, struct Person* person) {
     struct Node* new_node = createNode(person);
 
-    if (linked_list->head == NULL) {
-        linked_list->head = new_node;
-    } else {
+    if (linked_list->head) {
         struct Node* current_node = linked_list->head;
-        while (current_node->next != NULL) {
+        while (current_node->next) {
             current_node = current_node->next;
         }
         current_node->next = new_node;
+    } else {
+        linked_list->head = new_node;
     }
 }
 
@@ -75,7 +75,7 @@ void removeList(struct LinkedList* linked_list, struct Person* person) {
     struct Node* current_node = linked_list->head;
     struct Node* previous_node = NULL;
 
-    while (current_node != NULL) {
+    while (current_node) {
         if (current_node->data == person) {
             if (previous_node == NULL) {
                 linked_list->head = current_node->next;

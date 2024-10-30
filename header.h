@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 struct Person {
     const char* name;
     uint8_t age;
